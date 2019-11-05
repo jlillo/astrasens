@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+'''
+--- astrasens_run.py ---
+
+	Purpose
+	--------
+	Get sensitivity limits and create summary plots
+
+	Inputs and Options
+	------------------
+	
+
+	Example:
+	--------
+	python astrasens_run.py image 
+
+	Version Control:
+	----------------
+	2018/12/05   jlillobox First version 
+
+'''
+# ======================================
+# Imports
+# ======================================
+
+import numpy as np
+import emcee
+import scipy.optimize as op
+from math import *
+import get_xx
+from astropy.io import ascii
+import emcee
+import scipy.optimize as op
+import sys
+from astropy.table import Table, Column
+import math
+#import reveal_prepare as prepare
+import astrasens_fitter as fitter
+import astrasens_plot  as plotting
+import multiprocessing
+import time
+import argparse
+import os
+from termcolor import colored
+
+
+def run(args):
+    '''run
+    
+    Main function to run the different scripts with different options
+    
+    Parameter
+    ---------
+    image		image name
+    
+    Returns
+    -------
+    none
+    
+    '''
+    
+    if (os.path.isdir(args.root+'/22_ANALYSIS/') == False): 
+		os.mkdir(args.root+'/22_ANALYSIS/')
+		os.mkdir(args.root+'/22_ANALYSIS/'+args.night+'/')
+		os.mkdir(args.root+'/22_ANALYSIS/'+args.night+'/Sensitivity/')
+		os.mkdir(args.root+'/22_ANALYSIS/'+args.night+'/DetectedSources/')
+		os.mkdir(args.root+'/22_ANALYSIS/'+args.night+'/Summary_plots/')
+
+    
+    if args.PLOTS == True:
+    	sources, target, popt, fake, myfwhm, center, sources2 = fitter.sources(args)
+    	plotting.plotting(sources, target, popt, fake, myfwhm, center, sources2, args)
+    else:
+    	sources, target, popt, fake, myfwhm, center, sources2 = fitter.sources(args)
+    	fitter.sensitivity(sources, target, popt, fake, myfwhm, center, sources2, args)
+    	plotting.plotting(sources, target, popt, fake, myfwhm, center, sources2, args)
+	
+
+
+def cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("image", help="Image name")
+    parser.add_argument("root", help="Root folder")
+    parser.add_argument("night", help="Night folder")
+    parser.add_argument("-V", "--VERBOSE", help="VERBOSE", action="store_true")
+    parser.add_argument("-P", "--PLOTS", help="Plots only", action="store_true")
+    args = parser.parse_args()
+    return args
+
+
+
+# ======================================
+# 	        MAIN
+# ======================================
+
+if __name__ == "__main__":
+
+	args = cli()
+	
+	if args.image.endswith('.lis'):
+		images = np.genfromtxt(args.image, dtype=None)
+		for image in images:
+			args.image = image
+			try:
+				run(args)
+				print colored(image +"...ok", 'green')
+			except:
+				print colored("ERROR:" +image +" could not be processed", 'red')
+	else:
+		run(args)
+
+
+
+
+
+
