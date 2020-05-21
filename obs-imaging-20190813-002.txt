@@ -1,6 +1,0 @@
-TOI238|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327|--|4.4|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 
-TOI460|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327|--|4.5|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 
-TOI462|2.2m@CAHA|2.2m|AstraLux|2|909.7|137|nm|Lucky|0.02327|--|3.9|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 
-TOI464|2.2m@CAHA|2.2m|AstraLux|2|909.7|137|nm|Lucky|0.02327|--|2.4|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 
-TOI849|2.2m@CAHA|2.2m|AstraLux|2|909.7|137|nm|Lucky|0.02327|--|4.5|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 
-TOI856|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327|--|3.8|1|2019-08-13|20190813_lillobox_astralux_00000|CAB|-- 

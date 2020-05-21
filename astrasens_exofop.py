@@ -9,14 +9,14 @@
 
 	Inputs and Options
 	------------------
-	
+
 	Example:
 	--------
-	python astrasens_exofop.py image 
+	python astrasens_exofop.py image
 
 	Version Control:
 	----------------
-	2018/12/05   jlillobox First version 
+	2018/12/05   jlillobox First version
 
 '''
 # ======================================
@@ -34,7 +34,6 @@ import scipy.optimize as op
 import sys
 from astropy.table import Table, Column
 import math
-#import reveal_prepare as prepare
 import astrasens_fitter as fitter
 import astrasens_plot  as plotting
 import multiprocessing
@@ -63,10 +62,39 @@ if __name__ == "__main__":
 	args = cli()
 	root = args.root
 	images = glob.glob(args.root+'/11_REDUCED/'+args.night+'/*0100*TOI*.fits')
-	
-	
+
+
 	f = open('obs-imaging-20'+args.night+'-000.txt', 'w')
-	
+	f.write('\ AstraLux@CAHA Observations of TESS planets candidates \n')
+	f.write('\ @Authors: J. Lillo-Box, D. Barrado, M. Morales-Calderon \n')
+	f.write('\  \n')
+	f.write('\ Column headers (*Indicates required field): \n')
+	f.write('\  \n')
+	f.write('\ Target* = TIC ID (e.g. TIC11 or TIC17342172 - must include the "TIC" prefix) \n')
+	f.write('\             or \n')
+	f.write('\           TOI name (e.g. TOI999.01 or TOI999 - must include the "TOI" prefix and \n')
+	f.write('\           can refer to individual planets by using the .01, .02, etc. notation) \n')
+	f.write('\ Tel = Telescope* \n')
+	f.write('\ TelSize = Telescope size (meters) \n')
+	f.write('\ Inst = Instrument* \n')
+	f.write('\ Filter = Filter name* \n')
+	f.write('\ FiltCent = Filter central wavelength*v')
+	f.write('\ FiltWidth = Filter width* \n')
+	f.write('\ FiltUnits = Filter units -- nm, Angstroms, or microns* \n')
+	f.write('\ ImageType = AO, Speckle, Lucky, Seeing-Limited, or Other* \n')
+	f.write('\ Pixscale = Pixel scale (arcsec)* \n')
+	f.write('\ PSF = Estimated PSF (arcsec) \n')
+	f.write('\ Contrast_mag = Estimated contrast magnitude \n')
+	f.write('\ Contrast_sep = Estimated contrast separation (arcsec) \n')
+	f.write('\ Obsdate = Observation date (UT)* -- format YYYY-MM-DD (hh:mm:ss optional) \n')
+	f.write('\ Tag = data tag number or name (e.g. YYYYMMDD_username_description_nnnnn)* \n')
+	f.write('\ Group = group name \n')
+	f.write('\ Notes = notes about the observation \n')
+	f.write('\  \n')
+	f.write('\ Example data (header line is not required): \n')
+	f.write(' \n')
+	f.write('Target|Tel|TelSize|Inst|Filter|FiltCent|FiltWidth|FiltUnits|ImageType|Pixscale|PSF|Contrast_mag|Contrast_sep|Obsdate|Tag|Group|Notes \n')
+
 	for image in images:
 		filename = ntpath.basename(image)
 		# Get information from image name and header
@@ -81,7 +109,7 @@ if __name__ == "__main__":
 		else:
 			idobs = ''
 			filter = file.split('_')[3]
-		
+
 		fileID = file[14:]+'_'+rate
 
 
@@ -95,13 +123,13 @@ if __name__ == "__main__":
 
 			for i,dd in enumerate(dist_arr):
 				sens[i] = np.interp( 0.7, np.cumsum(detection[i,:]), dmag_arr)
-		
+
 			contrast = str(np.round(np.interp(1.0, dist_arr, sens),1))
 		else:
 			contrast = '--'
-		
+
 		nightformat = '20'+args.night[0:2]+'-'+args.night[2:4]+'-'+args.night[4:6]
-		f.write(objname+'|2.2m@CAHA|2.2m|AstraLux|'+filter+'|909.7|137|nm|Lucky|0.02327||'+contrast+'|1|'+nightformat+'|20'+args.night+'_lillobox_astralux_00000|| \n')
+		f.write(objname+'|2.2m@CAHA|2.2|AstraLux|'+filter+'|909.7|137|nm|Lucky|0.02327||'+contrast+'|1|'+nightformat+'|20'+args.night+'_lillobox_astralux_00000|| \n')
 		print objname
 
 	f.close()
@@ -125,9 +153,5 @@ if __name__ == "__main__":
 # \ Notes = notes about the observation
 # \
 # \ Example data (header line is not required):
-# 
+#
 # Target|Tel|TelSize|Inst|Filter|FiltCent|FiltWidth|FiltUnits|ImageType|Pixscale|PSF|Contrast_mag|Contrast_sep|Obsdate|Tag|Group|Notes
-
-
-
-
