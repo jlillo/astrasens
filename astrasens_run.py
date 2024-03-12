@@ -125,6 +125,7 @@ def cli():
     parser.add_argument("image", help="Image name")
     parser.add_argument("root", help="Root folder")
     parser.add_argument("night", help="Night folder")
+    parser.add_argument("-G", "--GDR3", help="Gaia DR3 id of the observed source", default=None)
     parser.add_argument("-V", "--VERBOSE", help="VERBOSE", action="store_true")
     parser.add_argument("-P", "--PLOTS", help="Plots only", action="store_true")
     parser.add_argument("-F", "--FORCE", help="Force re-calculation of sensitivity curve", action="store_true")

@@ -350,7 +350,11 @@ def check_gaia(args,TOIname=None):
 
 	print("\t --> Querying Gaia to look for the detected companions...")
 
-	if ((TOIname == None) & (args.TIC is not None)):
+	if args.GDR3 is not None:
+		gaia_id = args.GDR3
+		result = plotting.get_gaia_data_from_simbad(args.GDR3)
+		ra,dec = result['ra'].value.data[0], result['dec'].value.data[0]
+	elif ((TOIname == None) & (args.TIC is not None)):
 		tic = args.TIC
 	elif TOIname is not None:
 		# Read AstraLux targets
@@ -362,15 +366,17 @@ def check_gaia(args,TOIname=None):
 		this = np.where(ast['TOI'] == toi)[0]
 		this = np.atleast_1d(this)
 		tic = str(ast['TIC'][this[0]])
+
+		# Get TIC corrdinates and Gaia DR3 ID
+		ra,dec = plotting.get_coord(tic)
+		gaia_id, mag = plotting.get_dr2_id_from_tic(tic)
+		gaia_id = plotting.dr3_from_dr2(gaia_id)
+
 	else: 
-		print(colored('\t --> **ERROR** You must specify either a TIC name or a TOI name','red'))
+		print(colored('\t --> **ERROR** You must specify either a TIC name (--TIC), a TOI name, or a Gaia DR3 ID (--GDR3)','red'))
 		print('Exiting...')
 		sys.exit()
 
-	# Get TIC corrdinates and Gaia DR3 ID
-	ra,dec = plotting.get_coord(tic)
-	gaia_id, mag = plotting.get_dr2_id_from_tic(tic)
-	gaia_id = plotting.dr3_from_dr2(gaia_id)
 
 	# Search for Gaia sources
 	coord = SkyCoord(ra=ra, dec=dec, unit=(u.degree, u.degree), frame='fk5')

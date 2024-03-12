@@ -33,6 +33,12 @@ Or, if you want to run astrasens for all images within a given night:
 ```python astrasens_run.py all /full_path/astrasens/11_REDUCED/ 240122 ```
 
 
+If you are using `astrasens` with targets that are not TESS Objects of Interes (TOI) you must either provide a 
+identification from the TIC catalog (TESS Input Catalog) with the `--TIC` option  or the Gaia DR3 identification
+by using the `--GDR3` option like this:
+
+```python astrasens_run.py  TDRIZZLE_0100_TOI5377_SDSSz__240122.fits /full_path/astrasens/11_REDUCED/ 240122 --GDR3 1040790426885870976```
+
 
 ## Examples
 Locating companions:
