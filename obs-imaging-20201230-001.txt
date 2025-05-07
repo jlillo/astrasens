@@ -1,0 +1,33 @@
+\ AstraLux@CAHA Observations of TESS planets candidates 
+\ @Authors: J. Lillo-Box, D. Barrado, M. Morales-Calderon 
+\  
+\ Column headers (*Indicates required field): 
+\  
+\ Target* = TIC ID (e.g. TIC11 or TIC17342172 - must include the "TIC" prefix) 
+\             or 
+\           TOI name (e.g. TOI999.01 or TOI999 - must include the "TOI" prefix and 
+\           can refer to individual planets by using the .01, .02, etc. notation) 
+\ Tel = Telescope* 
+\ TelSize = Telescope size (meters) 
+\ Inst = Instrument* 
+\ Filter = Filter name* 
+\ FiltCent = Filter central wavelength*v\ FiltWidth = Filter width* 
+\ FiltUnits = Filter units -- nm, Angstroms, or microns* 
+\ ImageType = AO, Speckle, Lucky, Seeing-Limited, or Other* 
+\ Pixscale = Pixel scale (arcsec)* 
+\ PSF = Estimated PSF (arcsec) 
+\ Contrast_mag = Estimated contrast magnitude 
+\ Contrast_sep = Estimated contrast separation (arcsec) 
+\ Obsdate = Observation date (UT)* -- format YYYY-MM-DD (hh:mm:ss optional) 
+\ Tag = data tag number or name (e.g. YYYYMMDD_username_description_nnnnn)* 
+\ Group = group name 
+\ Notes = notes about the observation 
+\  
+\ Example data (header line is not required): 
+ 
+Target|Tel|TelSize|Inst|Filter|FiltCent|FiltWidth|FiltUnits|ImageType|Pixscale|PSF|Contrast_mag|Contrast_sep|Obsdate|Tag|Group|Notes 
+TOI1434|2.2m@CAHA|2.2|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.9|1|2020-12-30|20201230_lillobox_astralux_00000|| 
+TOI2072|2.2m@CAHA|2.2|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.5|1|2020-12-30|20201230_lillobox_astralux_00000|| 
+TOI1769|2.2m@CAHA|2.2|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||5.5|1|2020-12-30|20201230_lillobox_astralux_00000|| 
+TOI1683|2.2m@CAHA|2.2|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.9|1|2020-12-30|20201230_lillobox_astralux_00000|| 
+TOI1687|2.2m@CAHA|2.2|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.7|1|2020-12-30|20201230_lillobox_astralux_00000|| 

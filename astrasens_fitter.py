@@ -81,11 +81,11 @@ def psf_lorenz(x, g0, g1, l2):
 	"""
 	L = g0 * 1./np.pi * 0.5*l2/((x-g1)**2. + (0.5*l2)**2)
 	return L
-def psf_lorenz2(x, g0, g1, l2, level):
+def psf_lorenz2(x, g0, g1, l2, level,slope):
 	"""
 	PSF function to fit the radial profile of the target
 	"""
-	L = g0 * 1./np.pi * 0.5*l2/((x-g1)**2. + (0.5*l2)**2) + level
+	L = g0 * 1./np.pi * 0.5*l2/((x-g1)**2. + (0.5*l2)**2) + level + slope*x
 
 	# z = (x-g1)/(0.5*l2)
 	# L = g0 / (1+z**2) +level
@@ -146,12 +146,13 @@ def find_sources(data, XYcoords=None, fwhm=10., min_sharpness=0.8, roundness = 0
 	if VERBOSE:
 		print(_sources)
 		plt.scatter(_sources['xcentroid'],_sources['ycentroid'],marker='x',c='red')
+		for ss in _sources: plt.text(ss['xcentroid'],ss['ycentroid'],ss['id'],c='red')
 
 	# Remove close companions an no-star like sources
 
 	if ((COMPANIONS == True) & (len(np.shape(_sources)) > 0) ):
 		if len(_sources) > 0:
-			min_separation = 8 # pixels
+			min_separation = 4 # pixels
 			keep = np.full(len(_sources),True)
 			
 			# Separation betwee sources
@@ -165,33 +166,47 @@ def find_sources(data, XYcoords=None, fwhm=10., min_sharpness=0.8, roundness = 0
 						keepthis = np.argmax(_sources['peak'][matches])
 						keep[matches[keepthis]] = True
 
+			print(_sources[keep])
 			# Star-like source
 			for ss,s in enumerate(_sources):
 				if keep[ss] == True:
-					if keep[ss] == True:
-						xc,yc = int(s['xcentroid']),int(s['ycentroid'])
-						xradprof = np.arange(40)
-						horprof = np.sum(data[yc-3:yc+3,xc-20:xc+20],axis=0)
-						verprof = np.sum(data[yc-20:yc+20,xc-3:xc+3],axis=1)
-						bounds = ([0,   0 ,    0., -np.inf], [10000, 40, np.inf, np.inf] )
-						# Vertical profile
-						try:
-							p0 = (np.max(verprof),20, 0. , np.min(verprof) )
-							popt, pcov = curve_fit(psf_lorenz2, xradprof, verprof, maxfev=10000, p0=p0, bounds = bounds )
-							Vwidth = popt[2] 
-						except:
-							Vwidth = 100
-						# Horizontal profile
-						try:
-							p0 = (np.max(horprof),20, 0. , np.min(horprof) )
-							popt, pcov = curve_fit(psf_lorenz2, xradprof, horprof, maxfev=10000, p0=p0, bounds = bounds )
-							Hwidth = popt[2] 
-						except:
-							Hwidth = 100
+					xc,yc = int(s['xcentroid']),int(s['ycentroid'])
+					xradprof = np.arange(40)
+					horprof = np.sum(data[yc-3:yc+3,xc-20:xc+20],axis=0)
+					verprof = np.sum(data[yc-20:yc+20,xc-3:xc+3],axis=1)
+					bounds = ([0,   0 ,    0., -np.inf,-np.inf], [10000, 40, np.inf, np.inf,np.inf] )
+					# Vertical profile
+					try:
+						p0 = (np.max(verprof),20, 0. , np.min(verprof), 0.0 )
+						popt, pcov = curve_fit(psf_lorenz2, xradprof, verprof, maxfev=10000, p0=p0, bounds = bounds )
+						Vwidth = popt[2]
+						Vcenter = popt[1]
+					except:
+						Vwidth = 100
+						Vcenter = 0
+					# Horizontal profile
+					try:
+						p0 = (np.max(horprof),20, 0. , np.min(horprof), 0.0 )
+						popt, pcov = curve_fit(psf_lorenz2, xradprof, horprof, maxfev=10000, p0=p0, bounds = bounds )
+						Hwidth  = popt[2] 
+						Hcenter = popt[1]
+					except:
+						Hwidth = 100
+						Hcenter = 0
 
-						if ((Hwidth > 20) & (Vwidth > 20)):
-							keep[ss] = False	
+					if ((Hwidth > 20) | (Vwidth > 20)):
+						keep[ss] = False	
+					if ((np.abs(Hcenter-20) > 3) | (np.abs(Vcenter-20) > 3)) :
+						keep[ss] = False
 
+					# print(s['id'],Hwidth,Hcenter,Vwidth,Vcenter)
+					# if s['id'] == 13:
+					# 	plt.figure(2)
+					# 	plt.plot(xradprof,horprof)
+					# 	plt.plot(xradprof,verprof)
+					# 	plt.axvline(Hcenter,ls=':')
+					# 	plt.axvline(Vcenter,ls=':')
+					# 	plt.show()
 
 			_sources = _sources[keep]
 
@@ -210,6 +225,7 @@ def find_sources(data, XYcoords=None, fwhm=10., min_sharpness=0.8, roundness = 0
 			noborder = np.where((_sources['xcentroid'] > 0.05*nx) & (_sources['xcentroid'] < 0.95*nx) &
 								(_sources['ycentroid'] > 0.05*ny) & (_sources['ycentroid'] < 0.95*ny))[0]
 		elif COMPANIONS == True:
+			print(roundness,min_sharpness)
 			noborder = np.where((_sources['xcentroid'] > 0.05*nx) & (_sources['xcentroid'] < 0.95*nx) &
 								(_sources['ycentroid'] > 0.05*ny) & (_sources['ycentroid'] < 0.95*ny) &
 								(_sources['peak'] > fluxmin) &
@@ -222,11 +238,27 @@ def find_sources(data, XYcoords=None, fwhm=10., min_sharpness=0.8, roundness = 0
 								# (np.abs(_sources['roundness2']) < roundness) &
 								# (_sources['sharpness'] > min_sharpness))[0] # & (_sources['peak'] > 10.)	)[0]
 
+		from prettytable import PrettyTable
+		table = PrettyTable()
+		table.field_names = ["Xcentroid", "Ycentroid", "Fpeak", "Roundness1","Roundness2","Sharpness"]
+		for ss in _sources:
+			table.add_row([ss['xcentroid'],ss['ycentroid'],ss['peak'],ss['roundness1'],ss['roundness2'],ss['sharpness']])
 
 		if len(noborder) == 0: 
 			sources = None
+			print(colored("ERROR: there are no sources meeting the requested criteria:","red"))
+			print(colored("\t x in ["+str(0.05*nx)+","+str(0.95*nx)+"]" ,"red"))
+			print(colored("\t y in ["+str(0.05*ny)+","+str(0.95*ny)+"]" ,"red"))
+			print(colored("\t roundness < "+str(roundness),"red"))
+			print(colored("\t sharpness > "+str(min_sharpness),"red"))
+			print(table)
+			print(colored("\t --> Try modifying the min_sharpness and roundness parameters","blue"))
+			# sys.exit()			
+		else:
+			sources = _sources[noborder]
 
-		sources = _sources[noborder]
+		if VERBOSE:
+			print(table)	
 
 	else:
 		sources = _sources
@@ -238,7 +270,6 @@ def find_sources(data, XYcoords=None, fwhm=10., min_sharpness=0.8, roundness = 0
 			plt.scatter(sources['xcentroid'],sources['ycentroid'],marker='x',c='gold')
 			plt.show()
 			plt.close()
-		sys.exit()
 
 	return sources
 
@@ -386,17 +417,16 @@ def check_gaia(args,TOIname=None):
 	gaiares.pprint()
 
 	# Position on CCD
-	ngaia = len(gaiares['source_id'].value.data) 
+	ngaia = len(gaiares['SOURCE_ID'].value.data) 
 	if ngaia > 1:
 		gaia_companions = {}
-		targ = np.where(gaiares['source_id'] == gaia_id)[0]
+		targ = np.where(gaiares['SOURCE_ID'].astype(int) == int(gaia_id))[0]
 		delta_ra,delta_dec,gid = [],[],[]
 		for i,row in enumerate(gaiares):
-			if row['source_id'] == gaia_id: continue
-			delta_ra.append(-1*(row['ra'].data - gaiares['ra'][targ].data)[0] * 3600)
-			delta_dec.append((row['dec'].data - gaiares['dec'][targ].data )[0] * 3600)
-			gid.append(row['source_id'])
-			print(row['source_id'])
+			if row['SOURCE_ID'] == gaia_id: continue
+			delta_ra.append(-1*(row['ra'] - gaiares['ra'][targ].data)[0] * 3600)
+			delta_dec.append((row['dec'] - gaiares['dec'][targ].data )[0] * 3600)
+			gid.append(row['SOURCE_ID'])
 		delta_ra,delta_dec,gid = np.array(delta_ra), np.array(delta_dec), np.array(gid)
 	else:
 		delta_ra,delta_dec,gid = 0,0,0
@@ -593,7 +623,7 @@ def sources(args):
 
 
 	# Find peaks in residuals image
-	tbl = findpeaks(residuals,npeaks=100)
+	tbl = findpeaks(residuals,npeaks=1000)
 	if args.VERBOSE:
 		print(tbl)
 
@@ -607,10 +637,10 @@ def sources(args):
 	elif popt[2] < 5:
 		myfwhm2 = 10
 
-	sources2 = find_sources(residuals,XYcoords=tuple(XYcoords), fwhm=myfwhm2, roundness=0.2, min_sharpness=0.6, \
+	sources2 = find_sources(residuals,XYcoords=tuple(XYcoords), fwhm=myfwhm2, roundness=args.PARS[0], min_sharpness=args.PARS[1], \
 							fluxmin=2., signif=2., COMPANIONS=True, VERBOSE=args.VERBOSE) # ,roundness=0.8
-	
-	if len(np.shape(sources2)) > 0:
+
+	if len(np.shape(sources2)) > 0 :
 
 		target2 = np.argmax(sources2['flux'])
 		# if 1:
@@ -634,7 +664,11 @@ def sources(args):
 		print(phot_table)
 
 		# Gaia sources within 5 arcsec
-		delta_ra, delta_dec, gid, ngaia = check_gaia(args,TOIname=objname)
+		if "TOI" in objname: 
+			TOIname = objname
+		else:
+			TOIname = None
+		delta_ra, delta_dec, gid, ngaia = check_gaia(args,TOIname=TOIname)
 
 		
 
@@ -777,13 +811,15 @@ def sensitivity(sources, target, popt, fake,myfwhm, args):
 	# ==================================
 	print('\t --> Calculating SENSITIVITY curve')
 
-	dist_arr = np.logspace(np.log10(0.1), np.log10(maxdist),20)
+	Ndist, Dmag_max, Dmag_step = int(args.SENSPAR[0]), float(args.SENSPAR[1]), float(args.SENSPAR[2])
+	Nstars = int(args.SENSPAR[3])
 
-	maxmag   = 10. # delta_mag maximum
-	magstep  = 0.5 # mag
+	dist_arr = np.logspace(np.log10(0.1), np.log10(maxdist),Ndist)
+
+	maxmag   = Dmag_max # delta_mag maximum
+	magstep  = Dmag_step # mag
 	dmag_arr = np.linspace(maxmag, 0.0, int(maxmag/magstep))
-
-	nstars = 50
+	nstars   = Nstars 
 
 	detection = np.zeros((len(dist_arr),len(dmag_arr)))
 

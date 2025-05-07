@@ -1,0 +1,14 @@
+TOI1131|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.9|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1157|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.8|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1169|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.1|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1243|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.3|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1244|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.2|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1245|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.4|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1249|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.0|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1256|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||--|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1266|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.8|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1269|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.1|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1276|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||6.5|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1280|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||5.0|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1289|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||--|1|2019-10-29|20191029_lillobox_astralux_00000|| 
+TOI1331|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||5.8|1|2019-10-29|20191029_lillobox_astralux_00000|| 

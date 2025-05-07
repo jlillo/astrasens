@@ -60,7 +60,6 @@ if __name__ == "__main__":
 	args = cli()
 	root = args.root
 	images = glob.glob(args.root+'/11_REDUCED/'+args.night+'/*0100*TOI*.fits')
-	print(images)
 
 
 	f = open('obs-imaging-20'+args.night+'-000.txt', 'w')
@@ -98,7 +97,7 @@ if __name__ == "__main__":
 		filename = ntpath.basename(image)
 		# Get information from image name and header
 		file = os.path.splitext(filename)[0]
-		print(file,len(file.split('_')))
+		print file,len(file.split('_'))
 		objname = file.split('_')[2]
 		objname.replace('-','')
 		rate = file.split('_')[1]
@@ -129,7 +128,7 @@ if __name__ == "__main__":
 
 		nightformat = '20'+args.night[0:2]+'-'+args.night[2:4]+'-'+args.night[4:6]
 		f.write(objname+'|2.2m@CAHA|2.2|AstraLux|'+filter+'|909.7|137|nm|Lucky|0.02327||'+contrast+'|1|'+nightformat+'|20'+args.night+'_lillobox_astralux_00000|| \n')
-		print(objname)
+		print objname
 
 	f.close()
 

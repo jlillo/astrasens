@@ -28,7 +28,6 @@ import numpy as np
 import emcee
 import scipy.optimize as op
 from math import *
-import get_xx
 from astropy.io import ascii
 import emcee
 import scipy.optimize as op
@@ -85,7 +84,7 @@ def run(args):
 		outfile = args.root+'/22_ANALYSIS/'+args.night+'/DetectedSources/'+filename+'__Sources.npz'
 		if os.path.isfile(outfile) == True and args.FORCEDET == False:
 			print("\t --> File *Sources.nzp found, sources recovered. Use --FORCEDET to force re-analysis.")
-			results = np.load(outfile)
+			results = np.load(outfile,allow_pickle=True)
 			sources = results['sources']
 			target = results['target']
 			popt = results['popt']
@@ -128,6 +127,8 @@ def cli():
     parser.add_argument("-G", "--GDR3", help="Gaia DR3 id of the observed source", default=None)
     parser.add_argument("-V", "--VERBOSE", help="VERBOSE", action="store_true")
     parser.add_argument("-P", "--PLOTS", help="Plots only", action="store_true")
+    parser.add_argument("-PA", "--PARS", help="Array of [max_roundness,min_sharpness] for the companion detection. Default=[0.3,0.5]", default=[0.3,0.4],nargs=2,type=float)
+    parser.add_argument("-SP", "--SENSPAR", help="Array of [Ndist, Dmag_max, Dmag_step,Nstars] for the companion detection", default=[20,10,0.5,50], nargs=4)
     parser.add_argument("-F", "--FORCE", help="Force re-calculation of sensitivity curve", action="store_true")
     parser.add_argument("-FD", "--FORCEDET", help="Force detection of source companions", action="store_true")
     parser.add_argument("-I", "--IPAC", help="Format output of detected sources", action="store_true")

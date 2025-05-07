@@ -7,7 +7,6 @@ import argparse
 import time
 import os
 import jlillo_pypref
-import circles
 
 from photutils import datasets
 from photutils import DAOStarFinder
@@ -194,6 +193,10 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	# CHECK GAIA
 	# ==================================
 	if 1:
+		if "TOI" in objname: 
+			TOIname = objname
+		else:
+			TOIname = None
 		delta_ra,delta_dec,gid,ngaia = fitter.check_gaia(args,TOIname=objname)
 		# print("\t --> Querying Gaia to look for the detected companions...")
 		# # Read AstraLux targets
@@ -292,9 +295,12 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 
 	plt1 = ax3.scatter(dist_arr,sens, c='white',marker = 'o', s=40, edgecolors='none')
 	#plt.plot(dist_arr,sens,c='white',zorder=-5,lw=2)
-	f2 = interp1d(dist_arr,sens, kind='cubic')
-	xnew = np.linspace(np.min(dist_arr), np.max(dist_arr), num=1000, endpoint=True)
-	plt.plot(xnew,f2(xnew),c='white',zorder=-5,lw=2)
+	try:
+		f2 = interp1d(dist_arr,sens, kind='cubic')
+		xnew = np.linspace(np.min(dist_arr), np.max(dist_arr), num=1000, endpoint=True)
+		plt.plot(xnew,f2(xnew),c='white',zorder=-5,lw=2)
+	except:
+		plt.plot(dist_arr,sens,c='white')
 
 	# Plot companions location:
 	if ncomps > 0:

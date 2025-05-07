@@ -1,0 +1,47 @@
+\ AstraLux@CAHA Observations of TESS planets candidates
+\ @Authors: J. Lillo-Box, D. Barrado, M. Morales-Calderon
+\
+\ Column headers (*Indicates required field):
+\
+\ Target* = TIC ID (e.g. TIC11 or TIC17342172 - must include the "TIC" prefix)
+\             or
+\           TOI name (e.g. TOI999.01 or TOI999 - must include the "TOI" prefix and
+\           can refer to individual planets by using the .01, .02, etc. notation)
+\ Tel = Telescope*
+\ TelSize = Telescope size (meters)
+\ Inst = Instrument*
+\ Filter = Filter name*
+\ FiltCent = Filter central wavelength*v\ FiltWidth = Filter width*
+\ FiltUnits = Filter units -- nm, Angstroms, or microns*
+\ ImageType = AO, Speckle, Lucky, Seeing-Limited, or Other*
+\ Pixscale = Pixel scale (arcsec)*
+\ PSF = Estimated PSF (arcsec)
+\ Contrast_mag = Estimated contrast magnitude
+\ Contrast_sep = Estimated contrast separation (arcsec)
+\ Obsdate = Observation date (UT)* -- format YYYY-MM-DD (hh:mm:ss optional)
+\ Tag = data tag number or name (e.g. YYYYMMDD_username_description_nnnnn)*
+\ Group = group name
+\ Notes = notes about the observation
+\
+\ Example data (header line is not required):
+
+Target|Tel|TelSize|Inst|Filter|FiltCent|FiltWidth|FiltUnits|ImageType|Pixscale|PSF|Contrast_mag|Contrast_sep|Obsdate|Tag|Group|Notes
+TOI1436|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.9|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1293|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.8|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1434|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.4|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1174|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.8|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1447|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||0.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1246|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||0.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1416|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1685|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.8|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1238|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.9|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1437|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.9|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1683|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI442|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||0.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1451|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1655|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.4|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1478|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.0|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1297|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||2.4|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1411|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.5|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1136|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||3.8|1|2020-02-25|20200225_lillobox_astralux_00000|| 
+TOI1699|2.2m@CAHA|2.2m|AstraLux|SDSSz|909.7|137|nm|Lucky|0.02327||4.7|1|2020-02-25|20200225_lillobox_astralux_00000|| 
