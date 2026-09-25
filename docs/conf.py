@@ -1,0 +1,9 @@
+project = "astrasens"
+language = "en"
+author = "Jorge Lillo-Box"
+copyright = "2026, Jorge Lillo-Box"
+extensions = ["myst_parser"]
+exclude_patterns = []
+html_theme = "sphinx_rtd_theme"
+master_doc = "index"
+source_suffix = {".md": "markdown"}

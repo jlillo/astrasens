@@ -6,7 +6,6 @@ from pylab import *
 import argparse
 import time
 import os
-import jlillo_pypref
 
 from photutils import datasets
 from photutils import DAOStarFinder
@@ -19,6 +18,7 @@ from matplotlib.colorbar import Colorbar
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec # GRIDSPEC !
 from matplotlib.colors import LogNorm
+from matplotlib import font_manager
 
 from astropy.visualization import SqrtStretch
 from astropy.visualization.mpl_normalize import ImageNormalize
@@ -34,9 +34,6 @@ import astropy.units as u
 
 from astroquery.mast import Catalogs
 from astroquery.simbad import Simbad
-Simbad.add_votable_fields('pmra', 'pmdec')
-from astroquery.gaia import Gaia
-Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source"  # Reselect Data Release 3, default
 
 import scipy as sp
 import scipy.ndimage
@@ -46,6 +43,23 @@ from scipy.optimize import curve_fit
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning) 
 import astrasens_fitter as fitter
+
+font_path = "./ttf/Inter-Medium.ttf"
+font_manager.fontManager.addfont(font_path)
+
+# Obtener el nombre que reconoce Matplotlib.
+font_name = font_manager.FontProperties(fname=font_path).get_name()
+
+mpl.rc("font", **{
+       "family": "sans-serif",
+       "sans-serif": [font_name],
+       "size": 16,
+       "weight": 500,
+       "variant": "normal",
+})
+
+mpl.rc("axes", labelweight=500, titleweight=500, linewidth=1)
+
 
 
 def get_dr2_id_from_tic(tic):
@@ -73,6 +87,7 @@ def get_dr2_id_from_tic(tic):
     return GAIA_k, Gaiamag_k
 
 def dr3_from_dr2(dr2ID):
+	from astroquery.gaia import Gaia
 	query_dr3fromdr2 = "select dr3_source_id from gaiadr3.dr2_neighbourhood where dr2_source_id = "+dr2ID
 	job = Gaia.launch_job(query=query_dr3fromdr2)
 	dr3_ids = job.results['dr3_source_id'].value.data
@@ -89,7 +104,34 @@ def dr3_from_dr2(dr2ID):
 
 	return myid
 
+def get_gaia_data_from_simbad_sincronous(dr3ID):
+	from astroquery.gaia import Gaia
+
+	print("\t --> Querying Gaia to get the G magnitude...")
+
+	source_id = str(dr3ID).strip()
+	if not source_id.isascii() or not source_id.isdecimal():
+		raise ValueError("dr3ID must be an integer or a string representing an integer.")
+
+	query = f"""
+		SELECT source_id, ra, dec, pmra, pmdec, parallax,
+				phot_g_mean_mag
+		FROM gaiadr3.gaia_source
+		WHERE source_id = {source_id}
+	"""
+
+	job = Gaia.launch_job(query)
+	results = job.get_results()
+
+	if len(results) == 0:
+		raise ValueError(f"No Gaia DR3 found for {source_id}.")
+
+	return results
+
+
+
 def get_gaia_data_from_simbad(dr3ID):
+	from astroquery.gaia import Gaia
 	# simb = Simbad.query_object('Gaia DR2 '+dr2ID)
 	# simbid = Simbad.query_objectids('Gaia DR2 '+dr2ID)
 	# if simbid == None:
@@ -172,27 +214,34 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 
 	# Load Sensitivity information
 	t = np.load(root+'/22_ANALYSIS/'+night+'/Sensitivity/'+filename+'__Sensitivity.npz')
+	if 'method' not in t or str(t['method'].item()) not in ('shared-companion-psf-v1', 'matched-psf-completeness-v5') or not bool(t['complete'].item()):
+		raise ValueError('Sensitivity curve is legacy or incomplete; recalculate with -F or resume before plotting.')
 	detection = t['detection']
 	dist_arr  = t['dist_arr']
 	dmag_arr  = t['dmag_arr']
 	sens = dist_arr*0.0
 
-	maxdist  = np.min([ (nx-sources['xcentroid'][target])*0.02327-0.5,
-						(ny-sources['ycentroid'][target])*0.02327-0.5,
+	maxdist  = np.min([ (nx-sources['xcentroid'][target])*args.pxscale-0.5,
+						(ny-sources['ycentroid'][target])*args.pxscale-0.5,
 						6. ])#3. # arcsec
 
 
-	for i,dd in enumerate(dist_arr):
-		sens[i] = np.interp( 0.7, np.cumsum(detection[i,:]), dmag_arr)
-
-	if np.abs(sens[-2]-sens[-1]) > 1:
-		dist_arr = dist_arr[:-1]
-		sens = sens[:-1]
+	# Reuse cached recovery fractions, but apply the current 95% criterion.
+	level = .95
+	sens = fitter.completeness_limits(dmag_arr, detection, level=level)
+	print(nx)
+	print(dist_arr)
+	print(sens)
+	# Preserve gaps in the plotted curve; isolated NaNs indicate that
+	# the requested completeness was not reached at that separation.
+	valid_curve = np.isfinite(sens) & np.isfinite(dist_arr)
+	print('Sensitivity plotting: {}/{} radial bins reach {:.0%} completeness'.format(np.sum(valid_curve), len(sens), level))
 
 	# ==================================
 	# CHECK GAIA
 	# ==================================
-	if 1:
+	ngaia=1
+	if 0:
 		if "TOI" in objname: 
 			TOIname = objname
 		else:
@@ -238,7 +287,7 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	# SUMMARY PLOT
 	# ======================================================================================
 
-	pxscale = 0.02327
+	pxscale = args.pxscale
 
 	fig = plt.figure(figsize=(13,8))
 	gs = gridspec.GridSpec(2,3, height_ratios=[1,1], width_ratios=[0.5,1,0.05])
@@ -248,11 +297,11 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	ax1 = plt.subplot(gs[0,0])  # RAW IMAGE
 	# --------------------------------------------------------
 	norm = ImageNormalize(stretch=SqrtStretch())
-	plt.imshow(np.log(data), cmap='viridis', origin='lower',extent=[0,nx*0.02327,0.,ny*0.02327])
-	plt.scatter(sources['xcentroid']*0.02327, sources['ycentroid']*0.02327, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
-	plt.scatter(sources['xcentroid'][target]*0.02327, sources['ycentroid'][target]*0.02327, marker='s',s=100,facecolors='none',edgecolors='red')
-	circle1 = plt.Circle((sources['xcentroid'][target]*0.02327, sources['ycentroid'][target]*0.02327), 1, facecolor='none',ls=':', edgecolor='white')
-	circle2 = plt.Circle((sources['xcentroid'][target]*0.02327, sources['ycentroid'][target]*0.02327), 2, facecolor='none',ls=':', edgecolor='white')
+	plt.imshow(np.log(data), cmap='viridis', origin='lower',extent=[0,nx*pxscale,0.,ny*pxscale])
+	plt.scatter(sources['xcentroid']*pxscale, sources['ycentroid']*pxscale, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
+	plt.scatter(sources['xcentroid'][target]*pxscale, sources['ycentroid'][target]*pxscale, marker='s',s=100,facecolors='none',edgecolors='red')
+	circle1 = plt.Circle((sources['xcentroid'][target]*pxscale, sources['ycentroid'][target]*pxscale), 1, facecolor='none',ls=':', edgecolor='white')
+	circle2 = plt.Circle((sources['xcentroid'][target]*pxscale, sources['ycentroid'][target]*pxscale), 2, facecolor='none',ls=':', edgecolor='white')
 	ax1.add_patch(circle1)
 	ax1.add_patch(circle2)
 
@@ -270,12 +319,12 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 			  int(sources['xcentroid'][target]-4):int(sources['xcentroid'][target]+4)	] = np.nan
 	# Plot image
 	plt.imshow(residuals, cmap='viridis', origin='lower',norm=norm,
-			   extent=[ -int(center[0])*0.02327,(nx-int(center[0]))*0.02327,
-			   			-int(center[1])*0.02327,(ny-int(center[1]))*0.02327])
+			   extent=[ -int(center[0])*pxscale,(nx-int(center[0]))*pxscale,
+			   			-int(center[1])*pxscale,(ny-int(center[1]))*pxscale])
 	# Plot companions and target
 	if len(np.shape(sources2)) > 0:
-		plt.scatter((sources2['xcentroid']-center[0])*0.02327, (sources2['ycentroid']-center[1])*0.02327, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
-	plt.scatter((sources['xcentroid'][target]-center[0])*0.02327, (sources['ycentroid'][target]-center[1])*0.02327, marker='s',s=100,facecolors='none',edgecolors='red')
+		plt.scatter((sources2['xcentroid']-center[0])*pxscale, (sources2['ycentroid']-center[1])*pxscale, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
+	plt.scatter((sources['xcentroid'][target]-center[0])*pxscale, (sources['ycentroid'][target]-center[1])*pxscale, marker='s',s=100,facecolors='none',edgecolors='red')
 	# Gaia data:
 	if ngaia > 1:
 		for _Dra, _Ddec, _gid in zip(delta_ra,delta_dec,gid):
@@ -294,13 +343,9 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	# --------------------------------------------------------
 
 	plt1 = ax3.scatter(dist_arr,sens, c='white',marker = 'o', s=40, edgecolors='none')
-	#plt.plot(dist_arr,sens,c='white',zorder=-5,lw=2)
-	try:
-		f2 = interp1d(dist_arr,sens, kind='cubic')
-		xnew = np.linspace(np.min(dist_arr), np.max(dist_arr), num=1000, endpoint=True)
-		plt.plot(xnew,f2(xnew),c='white',zorder=-5,lw=2)
-	except:
-		plt.plot(dist_arr,sens,c='white')
+	# Linear segments preserve measured NaN gaps and avoid cubic overshoot.
+	if np.any(valid_curve):
+		plt.plot(dist_arr, sens, c='white', zorder=-5, lw=2)
 
 	# Plot companions location:
 	if ncomps > 0:
@@ -317,19 +362,37 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	ax3.set_xlabel('Angular separation (arcsec)')
 
 	xlimup = np.floor(maxdist)+1
-	ax3.text(xlimup*0.7, 1.2, 'AstraLux' + '\n' + 'Sensitivity curve, 5$\sigma$', color='black',
+	ax3.text(xlimup*0.2, 1.2, 'AstraLux' + '\n' + '{:.0%} completeness (PSF recovery)'.format(level), color='black',
         	fontsize=14, bbox=dict(facecolor='white', edgecolor='black', boxstyle='round'))
 
 
-	x = np.linspace(0,6,100)
-	y = np.linspace(9,0,100)
-	X, Y = np.meshgrid(x,y)
-	Z = Y/2.5
-	Z1 = 10.**(-Z) *100.
-	plt2 = ax3.imshow(Z1[::-1],extent=[0,6,9,0],zorder=-10,aspect='auto',
-					  norm=LogNorm(vmin=Z1.max(), vmax=Z1.min()),cmap = 'winter_r')
-	plt.xlim(0., xlimup)
-	plt.title(objname+' ('+filter+')')
+	x = np.linspace(0, xlimup, 100)
+	y = np.linspace(0, 9, 181)
+	X, Y = np.meshgrid(x, y)
+	# Contamination is companion / primary flux, in percent.
+	Z1 = 100. * 10.**(-0.4 * Y)
+	contamination_norm = LogNorm(vmin=Z1.min(), vmax=Z1.max())
+	plt2 = ax3.pcolormesh(X, Y, Z1, shading='auto', zorder=-10,
+						 norm=contamination_norm, cmap='plasma', rasterized=True)
+	contours = ax3.contour(X, Y, Z1, levels=[0.1, 1., 10.],
+						 cmap=plt2.cmap, norm=plt2.norm, linewidths=1.4, zorder=2)
+	# A dark outline makes a contour visible against its own map colour.
+	import matplotlib.patheffects as path_effects
+	outline = [path_effects.Stroke(linewidth=3., foreground='black'),
+			   path_effects.Normal()]
+	if hasattr(contours, 'set_path_effects'):
+		contours.set_path_effects(outline)
+	else:  # Matplotlib versions before ContourSet became a Collection.
+		for collection in contours.collections:
+			collection.set_path_effects(outline)
+	labels = ax3.clabel(contours, fmt=lambda value: '{:g}%'.format(value),
+						fontsize=10, inline=True,
+						manual=[(0.8*xlimup, dm) for dm in (7.5, 5., 2.5)])
+	for label in labels:
+		label.set_color('black')
+		label.set_bbox(dict(facecolor='white', edgecolor='none', alpha=0.9, pad=1.5))
+	ax3.set_xlim(0., xlimup)
+	ax3.set_title(objname+' ('+filter+')')
 
 
 	# --------------------------------------------------------
@@ -375,12 +438,12 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 	# residuals[ind] = np.nan
 
 	plt.imshow(residuals, cmap='viridis', origin='lower',norm=norm,
-			   extent=[ -int(center[0])*0.02327,(nx-int(center[0]))*0.02327,
-			   			-int(center[1])*0.02327,(ny-int(center[1]))*0.02327])
+			   extent=[ -int(center[0])*pxscale,(nx-int(center[0]))*pxscale,
+			   			-int(center[1])*pxscale,(ny-int(center[1]))*pxscale])
 
 	if len(np.shape(sources2)) > 0:
-		plt.scatter((sources2['xcentroid']-center[0])*0.02327, (sources2['ycentroid']-center[1])*0.02327, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
-	plt.scatter((sources['xcentroid'][target]-center[0])*0.02327, (sources['ycentroid'][target]-center[1])*0.02327, marker='s',s=100,facecolors='none',edgecolors='red')
+		plt.scatter((sources2['xcentroid']-center[0])*pxscale, (sources2['ycentroid']-center[1])*pxscale, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
+	plt.scatter((sources['xcentroid'][target]-center[0])*pxscale, (sources['ycentroid'][target]-center[1])*pxscale, marker='s',s=100,facecolors='none',edgecolors='red')
 
 	if ngaia > 1:
 		for _Dra, _Ddec, _gid in zip(delta_ra,delta_dec,gid):
@@ -423,12 +486,12 @@ def plotting(sources, target, popt, fake, myfwhm, center, sources2, args):
 			  int(sources['xcentroid'][target]-square):int(sources['xcentroid'][target]+square)	] = np.nan
 
 	plt.imshow(residuals, cmap='viridis', origin='lower',norm=norm,
-			   extent=[ -int(center[0])*0.02327,(nx-int(center[0]))*0.02327,
-			   			-int(center[1])*0.02327,(ny-int(center[1]))*0.02327])
+			   extent=[ -int(center[0])*pxscale,(nx-int(center[0]))*pxscale,
+			   			-int(center[1])*pxscale,(ny-int(center[1]))*pxscale])
 
 	if len(np.shape(sources2)) > 0:
-		plt.scatter((sources2['xcentroid']-center[0])*0.02327, (sources2['ycentroid']-center[1])*0.02327, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
-	plt.scatter((sources['xcentroid'][target]-center[0])*0.02327, (sources['ycentroid'][target]-center[1])*0.02327, marker='s',s=100,facecolors='none',edgecolors='red')
+		plt.scatter((sources2['xcentroid']-center[0])*pxscale, (sources2['ycentroid']-center[1])*pxscale, marker='o',s=100,facecolors='none',edgecolors='red',alpha=0.7)
+	plt.scatter((sources['xcentroid'][target]-center[0])*pxscale, (sources['ycentroid'][target]-center[1])*pxscale, marker='s',s=100,facecolors='none',edgecolors='red')
 
 	if ngaia > 1:
 		for _Dra, _Ddec, _gid in zip(delta_ra,delta_dec,gid):

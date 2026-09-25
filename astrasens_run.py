@@ -13,7 +13,7 @@
 
 	Example:
 	--------
-	python astrasens_run.py image
+	python astrasens_run.py image root night
 
 	Version Control:
 	----------------
@@ -106,7 +106,14 @@ def run(args):
 		# filename = file[14:]+'_'+rate
 		sensitivity_file = args.root+'/22_ANALYSIS/'+args.night+'/Sensitivity/'+filename+'__Sensitivity.npz'
 		if os.path.isfile(sensitivity_file) and args.FORCE is not True:
-			print("\t --> File found, sensitivity curve not re-calculated. Use --FORCE to force overwrite")
+			cache_state = fitter.sensitivity_cache_state(sensitivity_file, sources, target, popt, fake, args)
+			if cache_state == 'incompatible':
+				raise ValueError('Sensitivity cache uses another method/configuration. Run with -F to recalculate.')
+			if cache_state == 'resume':
+				print('Resuming the unfinished sensitivity calculation.')
+				fitter.sensitivity(sources, target, popt, fake, myfwhm, args)
+			else:
+				print('Compatible PSF sensitivity curve found; use -F to recalculate.')
 		else:
 			fitter.sensitivity(sources, target, popt, fake, myfwhm, args)
 
@@ -120,22 +127,29 @@ def run(args):
 
 
 def cli():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("image", help="Image name")
-    parser.add_argument("root", help="Root folder")
-    parser.add_argument("night", help="Night folder")
-    parser.add_argument("-G", "--GDR3", help="Gaia DR3 id of the observed source", default=None)
-    parser.add_argument("-V", "--VERBOSE", help="VERBOSE", action="store_true")
-    parser.add_argument("-P", "--PLOTS", help="Plots only", action="store_true")
-    parser.add_argument("-PA", "--PARS", help="Array of [max_roundness,min_sharpness] for the companion detection. Default=[0.3,0.5]", default=[0.3,0.4],nargs=2,type=float)
-    parser.add_argument("-SP", "--SENSPAR", help="Array of [Ndist, Dmag_max, Dmag_step,Nstars] for the companion detection", default=[20,10,0.5,50], nargs=4)
-    parser.add_argument("-F", "--FORCE", help="Force re-calculation of sensitivity curve", action="store_true")
-    parser.add_argument("-FD", "--FORCEDET", help="Force detection of source companions", action="store_true")
-    parser.add_argument("-I", "--IPAC", help="Format output of detected sources", action="store_true")
-    parser.add_argument("-W", "--WINDOW", help="Maximum distance to consider", default=None,type=float)
-    parser.add_argument("-T", "--TIC", help="TIC id of the object if known", default=None,type=int)
-    args = parser.parse_args()
-    return args
+	parser = argparse.ArgumentParser()
+	parser.add_argument("image", help="Image name")
+	parser.add_argument("root", help="Root folder")
+	parser.add_argument("night", help="Night folder")
+	parser.add_argument("-G", "--GDR3", help="Gaia DR3 id of the observed source", default=None)
+	parser.add_argument("--GAIA-TIMEOUT", type=float, default=30., help="Maximum total seconds for optional Gaia crossmatch (default: 30)")
+	parser.add_argument("-V", "--VERBOSE", help="VERBOSE", action="store_true")
+	parser.add_argument("-P", "--PLOTS", help="Plots only", action="store_true")
+	parser.add_argument("-PA", "--PARS", help="Deprecated compatibility option: companion morphology now uses a 2D PSF fit; these values are ignored.", default=[0.4,0.4],nargs=2,type=float)
+	parser.add_argument("-SP", "--SENSPAR", help="Array of [Ndist, Dmag_max, Dmag_step,Nstars] for the companion detection", default=[20,10,0.5,50], nargs=4)
+	parser.add_argument("-F", "--FORCE", help="Force re-calculation of sensitivity curve", action="store_true")
+	parser.add_argument("-FD", "--FORCEDET", help="Force detection of source companions", action="store_true")
+	parser.add_argument("-I", "--IPAC", help="Format output of detected sources", action="store_true")
+	parser.add_argument("-W", "--WINDOW", help="Maximum distance to consider", default=None,type=float)
+	parser.add_argument("-T", "--TIC", help="TIC id of the object if known", default=None,type=int)
+	parser.add_argument("-PS", "--pxscale", help="Pixel scale in arcsec/pixel. Default=0.02327", default=0.02327,type=float)
+	parser.add_argument("--PSF-MIN-BIC", dest="PSF_MIN_BIC", type=float, default=50., help="Minimum improvement of Moffat+plane over plane-only BIC (default: 50; morphology heuristic, not calibrated significance)")
+	parser.add_argument("--PSF-MAX-AXIS-RATIO", dest="PSF_MAX_AXIS_RATIO", type=float, default=3., help="Maximum major/minor fitted PSF FWHM ratio (default: 3)")
+	parser.add_argument("--SENS-SEED", dest="SENS_SEED", type=int, default=0, help="Reproducible injection-angle seed (default: 0)")
+	parser.add_argument("--SENS-MATCH-RADIUS", dest="SENS_MATCH_RADIUS", type=float, default=1., help="Maximum recovered/injected position distance, pixels (default: 1)")
+	parser.add_argument("--SENS-METHOD", dest="SENS_METHOD", choices=["matched", "blind"], default="matched", help="Sensitivity recovery: fast matched-PSF proxy (default) or exact blind companion detector")
+	args = parser.parse_args()
+	return args
 
 
 
@@ -178,7 +192,7 @@ if __name__ == "__main__":
 		fnotok.close()
 
 	elif args.image.endswith('.lis'):
-		images = np.genfromtxt(args.image, dtype=None, encoding='utf-8')
+		images = np.genfromtxt(args.image, dtype=str, encoding='utf-8')
 		for image in images:
 			print(colored("=======================================================", "light_blue"))
 			print(colored("Running image "+image, "light_blue"))

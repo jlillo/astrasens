@@ -1,0 +1,7 @@
+0_backup_astrasense_versions/
+9_tmp_results/
+9_ancillary_codes/
+info/
+__pycache__/
+*.pyc
+
