@@ -2,10 +2,8 @@
 
 ## From GitHub
 
-Replace `OWNER/REPOSITORY` with the actual astrasens repository location:
-
 ```bash
-git clone https://github.com/OWNER/REPOSITORY.git
+git clone https://github.com/jlillo/astrasens.git
 cd REPOSITORY
 python -m venv .venv
 source .venv/bin/activate       # Windows: .venv\Scripts\activate
