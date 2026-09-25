@@ -6,6 +6,8 @@ Determination of contrast (sensitivity) curves, detection of close companions, a
 
 <img src="logo_astrasens.png" alt="alt text" width="500" />
 
+Check out <a href="https://astrasens.readthedocs.io/en/latest/index.html">this page</a> for a complete documentation of the code.
+
 
 ## Usage
 
@@ -159,7 +161,7 @@ The sensitivity curve is conditional on the primary-source subtraction used in t
 
 ## Documentation
 
-The full documentation is available in the [docs](docs/index.md) directory and is configured for publication on Read the Docs using [.readthedocs.yaml](.readthedocs.yaml).
+The full documentation is available at <a href="https://astrasens.readthedocs.io/en/latest/index.html">this page</a>
 
 ## Examples
 
