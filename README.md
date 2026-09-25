@@ -11,8 +11,6 @@ Check out <a href="https://astrasens.readthedocs.io/en/latest/index.html">this p
 
 ## Usage
 
-Please ask J. Lillo-Box if you want to use this code for your science.
-
 The code assumes that the data are organized using the following structure, where `root_path` is the main directory of the observation:
 
 ```
@@ -204,5 +202,5 @@ archivePrefix = {arXiv},
 
 ## License
 
-2026, Jorge Lillo-Box
-
+`astrasens` is released under the MIT License. See the
+[LICENSE](LICENSE) file for details.
