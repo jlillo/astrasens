@@ -1,8 +1,11 @@
 # astrasens
 
-Determination of contrast curves, source catalogs, and diagnostic plots for high-spatial-resolution images obtained with the AstraLux instrument at Calar Alto Observatory, Spain.
+Determination of contrast (sensitivity) curves, detection of close companions, and diagnostic plots for high-spatial-resolution images obtained with the AstraLux-North (Calar Alto Observatory, Spain) and AstraLux-South instruments.
 
-AstraSense is intended for the detection and characterization of faint companion sources around bright targets in reduced or drizzled FITS images. It combines primary-source subtraction, candidate detection, two-dimensional PSF validation, and injection-based sensitivity calculations.
+`astrasens` is intended for the detection and characterization of faint companion sources around bright targets in reduced or drizzled FITS images. It combines primary-source subtraction, candidate detection, two-dimensional PSF validation, and injection-based sensitivity calculations.
+
+<img src="logo_astrasens.png" alt="alt text" width="500" />
+
 
 ## Usage
 
@@ -172,7 +175,32 @@ Performing aperture photometry on detected companions:
 
 ![Aperture photometry](https://github.com/jlillo/astrasens/blob/master/images/TOI-1169_SDSSz__191029_0100__AperturePhot.png)
 
+## Citing
+
+So far, please use this publication (a JOSS publication is forthcoming):
+
+```
+@ARTICLE{2014A&A...566A.103L,
+       author = {{Lillo-Box}, J. and {Barrado}, D. and {Bouy}, H.},
+        title = "{High-resolution imaging of Kepler planet host candidates. A comprehensive comparison of different techniques}",
+      journal = {\aap},
+     keywords = {techniques: high angular resolution, planets and satellites: fundamental parameters, binaries: visual, Astrophysics - Earth and Planetary Astrophysics},
+         year = 2014,
+        month = jun,
+       volume = {566},
+          eid = {A103},
+        pages = {A103},
+          doi = {10.1051/0004-6361/201423497},
+archivePrefix = {arXiv},
+       eprint = {1405.3120},
+ primaryClass = {astro-ph.EP},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2014A&A...566A.103L},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+```
+
+
 ## License
 
-Add the project license here before the first public release.
+2026, Jorge Lillo-Box
 
